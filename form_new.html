@@ -70,6 +70,9 @@
         // Get user's location
         function getLocation() {
             const status = document.getElementById('locationStatus');
+            status.textContent = 'Detecting location...';
+            document.getElementById('latitude').value = '';
+            document.getElementById('longitude').value = '';
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -107,7 +110,7 @@
                 alert("Submission successful!");
                 form.reset();
                 setTimestamp();
-                getLocation();
+                getLocation(); // Refresh location after form is reset
             })
             .catch(error => {
                 alert("Error: " + error);
