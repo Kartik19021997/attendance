@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Registration Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        form { max-width: 500px; margin: auto; }
+        label { display: block; margin-top: 15px; }
+        input[type="text"], input[type="email"], input[type="tel"], select {
+            width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box;
+        }
+        input[readonly] { background: #f0f0f0; }
+        .location-status { color: #888; font-size: 0.9em; }
+        button { margin-top: 20px; padding: 10px 20px; }
+    </style>
+</head>
+<body>
+    <h2>Event Registration Form</h2>
+    <form id="eventForm" method="POST" action="YOUR_WEBAPP_URL">
+        <label for="name">Name of the user:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="email">Email ID:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="company">Company Name:</label>
+        <input type="text" id="company" name="company" required>
+
+        <label for="event">Event Name:</label>
+        <input type="text" id="event" name="event" required>
+
+        <label for="eventType">Event Type:</label>
+        <select id="eventType" name="eventType" required>
+            <option value="">--Select--</option>
+            <option value="entry">Entry</option>
+            <option value="exit">Exit</option>
+        </select>
+
+        <label for="phone">Phone Number:</label>
+        <input type="tel" id="phone" name="phone" pattern="[0-9\-+() ]{7,20}" required>
+
+        <label>Latitude:</label>
+        <input type="text" id="latitude" name="latitude" readonly required>
+        
+        <label>Longitude:</label>
+        <input type="text" id="longitude" name="longitude" readonly required>
+        <div class="location-status" id="locationStatus">Detecting location...</div>
+
+        <label for="timestamp">Timestamp:</label>
+        <input type="text" id="timestamp" name="timestamp" readonly required>
+        
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        // Set the current timestamp
+        function setTimestamp() {
+            const now = new Date();
+            // Format: YYYY-MM-DD HH:MM:SS
+            const formatted = now.getFullYear() + '-' +
+                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                String(now.getDate()).padStart(2, '0') + ' ' +
+                String(now.getHours()).padStart(2, '0') + ':' +
+                String(now.getMinutes()).padStart(2, '0') + ':' +
+                String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('timestamp').value = formatted;
+        }
+
+        // Get user's location
+        function getLocation() {
+            const status = document.getElementById('locationStatus');
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        document.getElementById('latitude').value = position.coords.latitude;
+                        document.getElementById('longitude').value = position.coords.longitude;
+                        status.textContent = 'Location captured!';
+                    },
+                    (error) => {
+                        status.textContent = 'Could not get location: ' + error.message;
+                        document.getElementById('latitude').value = '';
+                        document.getElementById('longitude').value = '';
+                    }
+                );
+            } else {
+                status.textContent = 'Geolocation is not supported by this browser.';
+            }
+        }
+
+        // Initialize form on page load
+        window.onload = function() {
+            setTimestamp();
+            getLocation();
+        };
+
+        // AJAX form submission to Google Apps Script
+        document.getElementById('eventForm').addEventListener('submit', function(e){
+            e.preventDefault();
+            const form = e.target;
+            fetch(form.action, {
+                method: "POST",
+                body: new FormData(form)
+            })
+            .then(response => response.text())
+            .then(result => {
+                alert("Submission successful!");
+                form.reset();
+                setTimestamp();
+                getLocation();
+            })
+            .catch(error => {
+                alert("Error: " + error);
+            });
+        });
+    </script>
+</body>
+</html>
